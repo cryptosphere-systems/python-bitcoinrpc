@@ -180,7 +180,11 @@ class AuthServiceProxy(object):
                 'code': -342, 'message': 'missing HTTP response from server'})
 
         responsedata = http_response.read().decode('utf8')
-        response = json.loads(responsedata, parse_float=decimal.Decimal)
+        try:
+            response = json.loads(responsedata, parse_float=decimal.Decimal)
+        except (json.JSONDecodeError) as e:
+            raise ValueError("Error: {error}. Response: {response}.".format(error=str(e), response=responsedata))
+            
         if "error" in response and response["error"] is None:
             log.debug("<-%s- %s"%(response["id"], json.dumps(response["result"], default=EncodeDecimal)))
         else:
